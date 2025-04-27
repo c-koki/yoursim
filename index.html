@@ -1,178 +1,212 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>eSIMプラン詳細</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      background: #f2f4f8;
+      background-color: #f5f5f5;
       margin: 0;
-      padding: 40px 20px;
+      padding: 20px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #333;
+      justify-content: center;
     }
     .container {
       background: white;
       padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 600px;
       width: 100%;
     }
-    h1 {
+    .title {
       font-size: 24px;
-      margin-bottom: 20px;
+      font-weight: 700;
       text-align: center;
-      color: #2d3748;
     }
-    #price-top {
+    .price-top {
+      text-align: center;
+      margin-top: 10px;
       font-size: 20px;
       font-weight: bold;
-      margin-bottom: 20px;
-      text-align: center;
-      color: #1a202c;
     }
-    section {
-      margin-bottom: 20px;
+    .section {
+      margin-top: 30px;
     }
-    label {
+    .section-title {
       font-weight: bold;
-      margin-right: 10px;
+      margin-bottom: 5px;
     }
-    select, input[type="number"] {
-      margin-top: 8px;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
+    .list {
+      margin: 5px 0 20px 20px;
+      padding: 0;
+    }
+    .list li {
+      margin-bottom: 5px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    select, input {
       width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
     }
-    #price-bottom {
-      font-size: 20px;
+    .total-price {
       font-weight: bold;
-      margin: 20px 0;
       text-align: center;
-      color: #1a202c;
+      font-size: 20px;
+      margin: 20px 0;
     }
-    .btn {
+    .buy-btn {
       display: block;
       width: 100%;
-      padding: 12px;
-      background: #3b82f6;
+      background-color: #00b050;
       color: white;
+      padding: 12px;
       border: none;
       border-radius: 8px;
       font-size: 18px;
+      font-weight: bold;
       cursor: pointer;
       text-align: center;
+      text-decoration: none;
     }
-    .btn:hover {
-      background: #2563eb;
-    }
-    ul {
-      padding-left: 20px;
+    .buy-btn:hover {
+      background-color: #009043;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 id="plan-name">読み込み中...</h1>
-    <div id="price-top">合計金額：-</div>
 
-    <section id="description"></section>
-    <section id="merits"></section>
-    <section id="overview"></section>
-    <section id="specs"></section>
+<div class="container">
+  <div id="planName" class="title">読み込み中...</div>
+  <div id="priceTop" class="price-top"></div>
 
-    <section>
-      <label>利用日数を選択：</label>
-      <select id="days"></select>
-    </section>
+  <div class="section">
+    <p id="mainText"></p>
 
-    <section>
-      <label>eSIMの数量を選択：</label>
-      <input type="number" id="quantity" value="1" min="1" />
-    </section>
+    <div class="section-title">■メリット</div>
+    <ul id="meritList" class="list"></ul>
 
-    <div id="price-bottom">合計金額：-</div>
-    <button class="btn" id="buyButton">このプランを購入する</button>
+    <div class="section-title">■概要</div>
+    <ul id="overviewList" class="list"></ul>
+
+    <div class="section-title">■仕様</div>
+    <ul id="specList" class="list"></ul>
   </div>
 
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const planName = urlParams.get('plan');
+  <div class="section">
+    <div class="form-group">
+      <label for="days">利用日数を選択：</label>
+      <select id="days"></select>
+    </div>
+    <div class="form-group">
+      <label for="quantity">eSIMの数量を選択：</label>
+      <input type="number" id="quantity" value="1" min="1" max="10">
+    </div>
+    <div id="totalPrice" class="total-price">合計金額：-</div>
+    <a id="buyLink" class="buy-btn" target="_blank">このプランを購入する</a>
+  </div>
+</div>
 
-    document.getElementById('plan-name').textContent = planName || 'プラン名なし';
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const slug = urlParams.get('plan') || 'Japan'; // URLパラメータ(plan)から取得、なければJapan
 
-    const daysSelect = document.getElementById('days');
-    const quantityInput = document.getElementById('quantity');
-    const priceTop = document.getElementById('price-top');
-    const priceBottom = document.getElementById('price-bottom');
-    const description = document.getElementById('description');
-    const merits = document.getElementById('merits');
-    const overview = document.getElementById('overview');
-    const specs = document.getElementById('specs');
-    const buyButton = document.getElementById('buyButton');
+const sheetUrls = {
+  "Japan": "https://script.google.com/macros/s/AKfycbzgkH2liyopefSpyO3fDGoLA8rj3PL9UoVkqpjmPjyX9N80Wjjgzh3f6F8kQsZ4QByi/exec",
+  // 他の国も追加していけます！
+};
 
-    let planData = [];
+let planData = [];
 
-    async function fetchData() {
-      try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzgkH2liyopefSpyO3fDGoLA8rj3PL9UoVkqpjmPjyX9N80Wjjgzh3f6F8kQsZ4QByi/exec");
-        const data = await res.json();
-        planData = data.filter(row => row["プラン名"] === planName);
+async function fetchData() {
+  if (!sheetUrls[slug]) {
+    document.getElementById('planName').textContent = 'データが見つかりません';
+    return;
+  }
+  const res = await fetch(sheetUrls[slug]);
+  const data = await res.json();
+  planData = data;
+  init();
+}
 
-        if (planData.length === 0) {
-          priceTop.textContent = "データが見つかりません";
-          return;
-        }
+function init() {
+  if (planData.length === 0) {
+    document.getElementById('planName').textContent = 'データが見つかりません';
+    return;
+  }
+  
+  const firstRow = planData[0];
+  document.getElementById('planName').textContent = firstRow["プラン名"] || firstRow["国"] + " eSIM";
+  document.getElementById('mainText').textContent = firstRow["テキスト"] || "";
 
-        description.innerHTML = `<p>${planData[0]["テキスト"]}</p>`;
-        merits.innerHTML = `<h3>メリット</h3><ul>${["メリット1", "メリット2", "メリット3"].map(k => `<li>${planData[0][k]}</li>`).join('')}</ul>`;
-        overview.innerHTML = `<h3>概要</h3><ul>${["概要1", "概要2", "概要3"].map(k => `<li>${planData[0][k]}</li>`).join('')}</ul>`;
-        specs.innerHTML = `<h3>仕様</h3><ul>${["仕様1", "仕様2", "仕様3"].map(k => `<li>${planData[0][k]}</li>`).join('')}</ul>`;
-
-        planData.forEach(row => {
-          const option = document.createElement('option');
-          option.value = row["利用日数"];
-          option.textContent = row["利用日数"];
-          daysSelect.appendChild(option);
-        });
-
-        updatePrice();
-      } catch (e) {
-        console.error('データ取得エラー', e);
-      }
+  const meritList = document.getElementById('meritList');
+  ["メリット1", "メリット2", "メリット3"].forEach(key => {
+    if (firstRow[key]) {
+      const li = document.createElement('li');
+      li.textContent = firstRow[key];
+      meritList.appendChild(li);
     }
+  });
 
-    function updatePrice() {
-      const selectedDay = daysSelect.value;
-      const quantity = parseInt(quantityInput.value, 10);
-
-      const match = planData.find(row => row["利用日数"] === selectedDay);
-      if (match) {
-        const unitPrice = parseInt(match["金額"], 10) || 0;
-        const total = unitPrice * quantity;
-        priceTop.textContent = `合計金額：¥${total.toLocaleString()}`;
-        priceBottom.textContent = `合計金額：¥${total.toLocaleString()}`;
-
-        buyButton.onclick = () => {
-          if (match["URL"]) {
-            window.open(match["URL"], "_blank");
-          }
-        };
-      }
+  const overviewList = document.getElementById('overviewList');
+  ["概要1", "概要2", "概要3"].forEach(key => {
+    if (firstRow[key]) {
+      const li = document.createElement('li');
+      li.textContent = firstRow[key];
+      overviewList.appendChild(li);
     }
+  });
 
-    daysSelect.addEventListener('change', updatePrice);
-    quantityInput.addEventListener('input', updatePrice);
+  const specList = document.getElementById('specList');
+  ["仕様1", "仕様2", "仕様3"].forEach(key => {
+    if (firstRow[key]) {
+      const li = document.createElement('li');
+      li.textContent = firstRow[key];
+      specList.appendChild(li);
+    }
+  });
 
-    window.addEventListener('load', fetchData);
-  </script>
+  const daysSelect = document.getElementById('days');
+  planData.forEach(row => {
+    const option = document.createElement('option');
+    option.value = row["利用日数"];
+    option.textContent = row["利用日数"];
+    daysSelect.appendChild(option);
+  });
+
+  daysSelect.addEventListener('change', updatePrice);
+  document.getElementById('quantity').addEventListener('input', updatePrice);
+
+  updatePrice();
+}
+
+function updatePrice() {
+  const day = document.getElementById('days').value;
+  const qty = parseInt(document.getElementById('quantity').value, 10) || 1;
+  const match = planData.find(row => row["利用日数"] === day);
+
+  if (match) {
+    const unitPrice = parseInt(match["金額"]);
+    const total = unitPrice * qty;
+    document.getElementById('priceTop').textContent = `金額：¥${unitPrice}`;
+    document.getElementById('totalPrice').textContent = `合計金額：¥${total}`;
+    document.getElementById('buyLink').href = match["URL"];
+  } else {
+    document.getElementById('totalPrice').textContent = "合計金額：-";
+    document.getElementById('buyLink').href = "#";
+  }
+}
+
+fetchData();
+</script>
+
 </body>
 </html>
