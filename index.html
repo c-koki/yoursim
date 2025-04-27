@@ -3,43 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eSIM料金表</title>
+  <title>eSIM料金シミュレーター</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #f2f4f8;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #333;
     }
-    table {
-      border-collapse: collapse;
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      color: #2d3748;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 15px 0 5px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+
+    #top-price, #bottom-price {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0;
+      text-align: center;
+      color: #1a202c;
+    }
+
+    .btn {
+      display: block;
       width: 100%;
       margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
       text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-    th {
-      background-color: #f2f2f2;
+
+    .btn:hover {
+      background-color: #2563eb;
     }
   </style>
 </head>
 <body>
-  <h1>eSIM料金一覧</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>国</th>
-        <th>期間</th>
-        <th>容量</th>
-        <th>金額（円）</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>日本</td><td>3日</td><td>1GB</td><td>500</td></tr>
-      <tr><td>日本</td><td>7日</td><td>3GB</td><td>1200</td></tr>
-      <tr><td>アメリカ</td><td>30日</td><td>無制限</td><td>3500</td></tr>
-    </tbody>
-  </table>
+  <div class="container">
+    <h1 id="plan-name">読み込み中...</h1>
+    <p id="top-price"></p>
+    <p id="plan-text"></p>
+
+    <h3>メリット</h3>
+    <ul id="benefits"></ul>
+
+    <h3>概要</h3>
+    <ul id="summaries"></ul>
+
+    <h3>仕様</h3>
+    <ul id="specs"></ul>
+
+    <label>利用日数</label>
+    <select id="days">
+      <option value="">選択してください</option>
+    </select>
+
+    <label>数量</label>
+    <select id="quantity">
+      ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1}枚</option>`).join("")}
+    </select>
+
+    <p id="bottom-price"></p>
+
+    <div id="purchase-link"></div>
+  </div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
+      const appUrl = "https://script.google.com/macros/s/AKfycbzgkH2liyopefSpyO3fDGoLA8rj3PL9UoVkqpjmPjyX9N80Wjjgzh3f6F8kQsZ4QByi/exec";
+      
+      const pathParts = window.location.pathname.split("/");
+      const countrySlug = pathParts[pathParts.length - 1].toLowerCase();
+      const sheetName = countrySlug.charAt(0).toUpperCase() + countrySlug.slice(1);
+
+      let data = [];
+      try {
+        const res = await fetch(`${appUrl}?sheet=${sheetName}`);
+        data = await res.json();
+      } catch (e) {
+        document.body.innerHTML = "データ取得エラー";
+        console.error(e);
+        return;
+      }
+
+      if (!data.length) {
+        document.body.innerHTML = "データがありません";
+        return;
+      }
+
+      const plan = data[0];
+
+      document.getElementById("plan-name").textContent = plan["プラン名"];
+      document.getElementById("top-price").textContent = `金額：¥${plan["金額"]}`;
+      document.getElementById("plan-text").textContent = plan["テキスト"];
+
+      document.getElementById("benefits").innerHTML = [plan["メリット1"], plan["メリット2"], plan["メリット3"]]
+        .filter(Boolean).map(m => `<li>${m}</li>`).join("");
+      
+      document.getElementById("summaries").innerHTML = [plan["概要1"], plan["概要2"], plan["概要3"]]
+        .filter(Boolean).map(m => `<li>${m}</li>`).join("");
+
+      document.getElementById("specs").innerHTML = [plan["仕様1"], plan["仕様2"], plan["仕様3"]]
+        .filter(Boolean).map(m => `<li>${m}</li>`).join("");
+
+      // 日数選択（今は固定1個）
+      const daysSelect = document.getElementById("days");
+      daysSelect.innerHTML = `<option value="${plan["利用日数"]}">${plan["利用日数"]}日</option>`;
+
+      // 数量選択
+      const quantitySelect = document.getElementById("quantity");
+      quantitySelect.innerHTML = Array.from({ length: 10 }, (_, i) =>
+        `<option value="${i + 1}">${i + 1}枚</option>`
+      ).join("");
+
+      const updatePrice = () => {
+        const qty = parseInt(quantitySelect.value || 1, 10);
+        const newPrice = plan["金額"] * qty;
+        document.getElementById("top-price").textContent = `金額：¥${newPrice}`;
+        document.getElementById("bottom-price").textContent = `合計金額：¥${newPrice}`;
+      };
+
+      quantitySelect.addEventListener("change", updatePrice);
+      updatePrice();
+
+      // 購入ボタン
+      document.getElementById("purchase-link").innerHTML = `
+        <a href="${plan["URL"]}" target="_blank" class="btn">このプランを購入する</a>
+      `;
+    });
+  </script>
 </body>
 </html>
