@@ -8,205 +8,119 @@
   <style>
     body {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      background-color: #f5f5f5;
+      background: #f5f5f5;
       margin: 0;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      max-width: 600px;
-      width: 100%;
-    }
-    .title {
-      font-size: 24px;
-      font-weight: 700;
-      text-align: center;
-    }
-    .price-top {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    .section {
-      margin-top: 30px;
-    }
-    .section-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .list {
-      margin: 5px 0 20px 20px;
       padding: 0;
     }
-    .list li {
-      margin-bottom: 5px;
-    }
-    .form-group {
-      margin-bottom: 20px;
+    .container {
+      max-width: 400px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     select, input {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
+      margin-top: 10px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
     }
-    .total-price {
-      font-weight: bold;
-      text-align: center;
-      font-size: 20px;
-      margin: 20px 0;
-    }
-    .buy-btn {
-      display: block;
-      width: 100%;
-      background-color: #00b050;
-      color: white;
+    button {
+      margin-top: 20px;
       padding: 12px;
+      width: 100%;
+      background: #00aa00;
+      color: #fff;
       border: none;
-      border-radius: 8px;
-      font-size: 18px;
-      font-weight: bold;
+      border-radius: 5px;
+      font-size: 16px;
       cursor: pointer;
-      text-align: center;
-      text-decoration: none;
     }
-    .buy-btn:hover {
-      background-color: #009043;
+    button:hover {
+      background: #008800;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2 id="plan-name">プラン名なし</h2>
+    <p id="intro-text">データが見つかりません</p>
 
-<div class="container">
-  <div id="planName" class="title">読み込み中...</div>
-  <div id="priceTop" class="price-top"></div>
+    <label>利用日数を選択：</label>
+    <select id="days"></select>
 
-  <div class="section">
-    <p id="mainText"></p>
+    <label>eSIMの数量を選択：</label>
+    <input type="number" id="quantity" value="1" min="1">
 
-    <div class="section-title">■メリット</div>
-    <ul id="meritList" class="list"></ul>
+    <h3 id="total-price">合計金額：-</h3>
 
-    <div class="section-title">■概要</div>
-    <ul id="overviewList" class="list"></ul>
-
-    <div class="section-title">■仕様</div>
-    <ul id="specList" class="list"></ul>
+    <button id="purchase-button">このプランを購入する</button>
   </div>
 
-  <div class="section">
-    <div class="form-group">
-      <label for="days">利用日数を選択：</label>
-      <select id="days"></select>
-    </div>
-    <div class="form-group">
-      <label for="quantity">eSIMの数量を選択：</label>
-      <input type="number" id="quantity" value="1" min="1" max="10">
-    </div>
-    <div id="totalPrice" class="total-price">合計金額：-</div>
-    <a id="buyLink" class="buy-btn" target="_blank">このプランを購入する</a>
-  </div>
-</div>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const plan = urlParams.get('plan');
 
-<script>
-const urlParams = new URLSearchParams(window.location.search);
-const slug = urlParams.get('plan') || 'Japan'; // URLパラメータ(plan)から取得、なければJapan
-
-const sheetUrls = {
-  "Japan": "https://script.google.com/macros/s/AKfycbzgkH2liyopefSpyO3fDGoLA8rj3PL9UoVkqpjmPjyX9N80Wjjgzh3f6F8kQsZ4QByi/exec",
-  // 他の国も追加していけます！
-};
-
-let planData = [];
-
-async function fetchData() {
-  if (!sheetUrls[slug]) {
-    document.getElementById('planName').textContent = 'データが見つかりません';
-    return;
-  }
-  const res = await fetch(sheetUrls[slug]);
-  const data = await res.json();
-  planData = data;
-  init();
-}
-
-function init() {
-  if (planData.length === 0) {
-    document.getElementById('planName').textContent = 'データが見つかりません';
-    return;
-  }
-  
-  const firstRow = planData[0];
-  document.getElementById('planName').textContent = firstRow["プラン名"] || firstRow["国"] + " eSIM";
-  document.getElementById('mainText').textContent = firstRow["テキスト"] || "";
-
-  const meritList = document.getElementById('meritList');
-  ["メリット1", "メリット2", "メリット3"].forEach(key => {
-    if (firstRow[key]) {
-      const li = document.createElement('li');
-      li.textContent = firstRow[key];
-      meritList.appendChild(li);
+    if (!plan) {
+      document.getElementById('intro-text').textContent = "プランが指定されていません。";
+      throw new Error('planパラメータがありません');
     }
-  });
 
-  const overviewList = document.getElementById('overviewList');
-  ["概要1", "概要2", "概要3"].forEach(key => {
-    if (firstRow[key]) {
-      const li = document.createElement('li');
-      li.textContent = firstRow[key];
-      overviewList.appendChild(li);
-    }
-  });
+    const spreadsheetId = "1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk";
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
 
-  const specList = document.getElementById('specList');
-  ["仕様1", "仕様2", "仕様3"].forEach(key => {
-    if (firstRow[key]) {
-      const li = document.createElement('li');
-      li.textContent = firstRow[key];
-      specList.appendChild(li);
-    }
-  });
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = json.table.rows;
 
-  const daysSelect = document.getElementById('days');
-  planData.forEach(row => {
-    const option = document.createElement('option');
-    option.value = row["利用日数"];
-    option.textContent = row["利用日数"];
-    daysSelect.appendChild(option);
-  });
+        if (!rows.length) {
+          document.getElementById('intro-text').textContent = "データが見つかりません";
+          return;
+        }
 
-  daysSelect.addEventListener('change', updatePrice);
-  document.getElementById('quantity').addEventListener('input', updatePrice);
+        // プラン名（B列）
+        document.getElementById('plan-name').textContent = rows[0].c[1]?.v || "プラン名なし";
 
-  updatePrice();
-}
+        // 利用日数と金額（L列とN列）
+        const daysSelect = document.getElementById('days');
+        rows.forEach(row => {
+          const day = row.c[11]?.v;
+          const price = row.c[13]?.v;
+          if (day && price) {
+            const option = document.createElement('option');
+            option.value = day;
+            option.textContent = day;
+            option.setAttribute('data-price', price);
+            daysSelect.appendChild(option);
+          }
+        });
 
-function updatePrice() {
-  const day = document.getElementById('days').value;
-  const qty = parseInt(document.getElementById('quantity').value, 10) || 1;
-  const match = planData.find(row => row["利用日数"] === day);
+        function updateTotal() {
+          const selected = daysSelect.options[daysSelect.selectedIndex];
+          const price = Number(selected.getAttribute('data-price'));
+          const quantity = Number(document.getElementById('quantity').value);
+          const total = price * quantity;
+          document.getElementById('total-price').textContent = `合計金額：¥${total.toLocaleString()}`;
+        }
 
-  if (match) {
-    const unitPrice = parseInt(match["金額"]);
-    const total = unitPrice * qty;
-    document.getElementById('priceTop').textContent = `金額：¥${unitPrice}`;
-    document.getElementById('totalPrice').textContent = `合計金額：¥${total}`;
-    document.getElementById('buyLink').href = match["URL"];
-  } else {
-    document.getElementById('totalPrice').textContent = "合計金額：-";
-    document.getElementById('buyLink').href = "#";
-  }
-}
+        daysSelect.addEventListener('change', updateTotal);
+        document.getElementById('quantity').addEventListener('input', updateTotal);
 
-fetchData();
-</script>
+        updateTotal();
 
+        // 購入ボタン（仮リンク）
+        document.getElementById('purchase-button').addEventListener('click', () => {
+          alert('購入ボタンが押されました（実装は別途）');
+        });
+      })
+      .catch(err => {
+        console.error("取得エラー:", err);
+        document.getElementById('intro-text').textContent = "データ取得に失敗しました";
+      });
+  </script>
 </body>
 </html>
