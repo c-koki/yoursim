@@ -3,60 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eSIMプラン詳細</title>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+  <title>eSIM料金プラン</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      background: #f5f5f5;
       margin: 0;
-      padding: 0;
+      padding: 20px;
+      background: #f5f5f5;
+      color: #333;
     }
     .container {
-      max-width: 400px;
-      margin: 50px auto;
+      max-width: 420px;
+      margin: 0 auto;
       background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    label, select, input {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      font-size: 16px;
     }
     select, input {
-      width: 100%;
       padding: 10px;
-      margin-top: 10px;
-      font-family: 'Zen Kaku Gothic New', sans-serif;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-    button {
+    .price {
+      font-weight: bold;
+      font-size: 18px;
       margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      background: #00aa00;
-      color: #fff;
+      text-align: center;
+    }
+    .button-wrapper {
+      text-align: center;
+      margin-top: 16px;
+    }
+    .btn {
+      background: #007bff;
+      color: white;
       border: none;
+      padding: 12px 20px;
       border-radius: 5px;
-      font-size: 16px;
       cursor: pointer;
     }
-    button:hover {
-      background: #008800;
+    .btn:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 id="plan-name">プラン名なし</h2>
-    <p id="intro-text">データが見つかりません</p>
+    <h1 id="plan-title">eSIMプラン</h1>
+    <div id="description">プラン内容を選択してください</div>
 
-    <label>利用日数を選択：</label>
+    <label for="days">利用日数を選択：</label>
     <select id="days"></select>
 
-    <label>eSIMの数量を選択：</label>
-    <input type="number" id="quantity" value="1" min="1">
+    <label for="quantity">eSIMの数量：</label>
+    <input type="number" id="quantity" value="1" min="1" />
 
-    <h3 id="total-price">合計金額：-</h3>
+    <div class="price" id="total-price">合計金額：-</div>
 
-    <button id="purchase-button">このプランを購入する</button>
+    <div class="button-wrapper" id="linkDisplay"></div>
   </div>
 
   <script>
@@ -64,28 +80,26 @@
     const plan = urlParams.get('plan');
 
     if (!plan) {
-      document.getElementById('intro-text').textContent = "プランが指定されていません。";
-      throw new Error('planパラメータがありません');
+      document.getElementById('description').textContent = 'URLに ?plan=Japan のようにパラメータを付けてください';
+      throw new Error('planパラメータが見つかりません');
     }
 
-    const spreadsheetId = "1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk";
-    const sheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
+    const sheetId = '1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk'; // あなたのスプレッドシートID
+    const sheetURL = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
 
-    fetch(sheetUrl)
+    fetch(sheetURL)
       .then(res => res.text())
       .then(text => {
         const json = JSON.parse(text.substr(47).slice(0, -2));
         const rows = json.table.rows;
 
         if (!rows.length) {
-          document.getElementById('intro-text').textContent = "データが見つかりません";
+          document.getElementById('description').textContent = '該当するデータが見つかりません';
           return;
         }
 
-        // プラン名（B列）
-        document.getElementById('plan-name').textContent = rows[0].c[1]?.v || "プラン名なし";
+        document.getElementById('plan-title').textContent = rows[0].c[1]?.v || 'eSIMプラン';
 
-        // 利用日数と金額（L列とN列）
         const daysSelect = document.getElementById('days');
         rows.forEach(row => {
           const day = row.c[11]?.v;
@@ -101,10 +115,12 @@
 
         function updateTotal() {
           const selected = daysSelect.options[daysSelect.selectedIndex];
-          const price = Number(selected.getAttribute('data-price'));
+          const price = Number(selected?.getAttribute('data-price'));
           const quantity = Number(document.getElementById('quantity').value);
           const total = price * quantity;
-          document.getElementById('total-price').textContent = `合計金額：¥${total.toLocaleString()}`;
+          document.getElementById('total-price').textContent = isNaN(total)
+            ? '合計金額：-'
+            : `合計金額：¥${total.toLocaleString()}`;
         }
 
         daysSelect.addEventListener('change', updateTotal);
@@ -112,14 +128,18 @@
 
         updateTotal();
 
-        // 購入ボタン（仮リンク）
-        document.getElementById('purchase-button').addEventListener('click', () => {
-          alert('購入ボタンが押されました（実装は別途）');
-        });
+        const matchURL = rows[0].c[14]?.v;
+        if (matchURL) {
+          document.getElementById('linkDisplay').innerHTML = `
+            <a href="${matchURL}" target="_blank">
+              <button class="btn">このプランを購入</button>
+            </a>
+          `;
+        }
       })
-      .catch(err => {
-        console.error("取得エラー:", err);
-        document.getElementById('intro-text').textContent = "データ取得に失敗しました";
+      .catch(error => {
+        console.error('読み込みエラー:', error);
+        document.getElementById('description').textContent = '読み込みに失敗しました';
       });
   </script>
 </body>
