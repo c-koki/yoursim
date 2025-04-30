@@ -22,7 +22,7 @@
       box-sizing: border-box;
     }
     h1 {
-      font-size: 36px;
+      font-size: 24px;
       font-weight: bold;
       margin-bottom: 4px;
     }
@@ -31,10 +31,13 @@
       justify-content: space-between;
       align-items: center;
       font-weight: bold;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    #plan-price {
+      font-size: 22px;
     }
     h2 {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: bold;
       margin-top: 24px;
       margin-bottom: 8px;
@@ -53,6 +56,8 @@
       display: flex;
       gap: 16px;
       flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 8px;
     }
     .option-group {
       flex: 1;
@@ -65,7 +70,7 @@
     .subtext {
       font-size: 13px;
       color: #666;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     select, input[type="number"] {
       padding: 10px;
@@ -73,11 +78,12 @@
       border-radius: 8px;
       width: 100%;
       font-size: 16px;
+      box-sizing: border-box;
     }
     .price {
       font-weight: bold;
       text-align: center;
-      font-size: 24px;
+      font-size: 20px;
       margin-top: 24px;
     }
     .button-wrapper {
@@ -157,32 +163,21 @@
         document.getElementById('plan-title').textContent = firstRow[1]?.v || 'eSIMプラン';
         document.getElementById('description').textContent = firstRow[2]?.v || '';
 
-        [3,4,5].forEach(i => {
-          const val = firstRow[i]?.v;
-          if (val) {
-            const li = document.createElement('li');
-            li.textContent = '・' + val;
-            document.getElementById('merits').appendChild(li);
-          }
-        });
+        const addListItems = (elementId, indexes) => {
+          const ul = document.getElementById(elementId);
+          indexes.forEach(i => {
+            const val = firstRow[i]?.v;
+            if (val) {
+              const li = document.createElement('li');
+              li.textContent = val;
+              ul.appendChild(li);
+            }
+          });
+        };
 
-        [6,7,8].forEach(i => {
-          const val = firstRow[i]?.v;
-          if (val) {
-            const li = document.createElement('li');
-            li.textContent = '・' + val;
-            document.getElementById('summaries').appendChild(li);
-          }
-        });
-
-        [9,10,11].forEach(i => {
-          const val = firstRow[i]?.v;
-          if (val) {
-            const li = document.createElement('li');
-            li.textContent = '・' + val;
-            document.getElementById('specs').appendChild(li);
-          }
-        });
+        addListItems('merits', [3,4,5]);
+        addListItems('summaries', [6,7,8]);
+        addListItems('specs', [9,10,11]);
 
         const daysSelect = document.getElementById('days');
         rows.forEach(row => {
@@ -203,7 +198,7 @@
           const quantity = Number(document.getElementById('quantity').value) || 1;
           const total = price * quantity;
           document.getElementById('total-price').textContent = `合計 ¥${total.toLocaleString()}`;
-          document.getElementById('plan-price').textContent = `¥${price}`;
+          document.getElementById('plan-price').textContent = `¥${price.toLocaleString()}`;
         }
 
         daysSelect.addEventListener('change', updateTotal);
