@@ -10,7 +10,7 @@
       font-family: 'Zen Kaku Gothic New', sans-serif;
       background: white;
       margin: 0;
-      padding: 0;
+      padding: 0 32px;
     }
     .container {
       max-width: 640px;
@@ -34,6 +34,7 @@
     }
     #plan-price {
       font-size: 24px;
+      font-weight: bold;
     }
     h2 {
       font-size: 16px;
@@ -83,8 +84,20 @@
     .price {
       font-weight: bold;
       text-align: center;
-      font-size: 20px;
+      font-size: 22px;
       margin-top: 24px;
+      position: relative;
+    }
+    .price::before {
+      content: "";
+      display: block;
+      height: 1px;
+      background: #ccc;
+      width: 40%;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
     }
     .button-wrapper {
       text-align: center;
@@ -97,6 +110,7 @@
       padding: 16px;
       border-radius: 30px;
       font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
       width: 100%;
     }
