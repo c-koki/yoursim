@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>eSIM料金プラン</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New&display=swap" rel="stylesheet">
   <style>
@@ -24,6 +24,17 @@
     h1 {
       font-size: 22px;
       margin-bottom: 10px;
+    }
+    h2 {
+      font-size: 18px;
+      margin-top: 24px;
+    }
+    ul {
+      padding-left: 20px;
+      margin: 8px 0;
+    }
+    li {
+      margin-bottom: 4px;
     }
     label, select, input {
       display: block;
@@ -64,6 +75,15 @@
     <h1 id="plan-title">eSIMプラン</h1>
     <div id="description">プラン内容を選択してください</div>
 
+    <h2>メリット</h2>
+    <ul id="merits"></ul>
+
+    <h2>概要</h2>
+    <ul id="summaries"></ul>
+
+    <h2>仕様</h2>
+    <ul id="specs"></ul>
+
     <label for="days">利用日数を選択：</label>
     <select id="days"></select>
 
@@ -98,12 +118,50 @@
           return;
         }
 
-        document.getElementById('plan-title').textContent = rows[0].c[1]?.v || 'eSIMプラン';
+        const firstRow = rows[0].c;
 
+        // タイトルと説明
+        document.getElementById('plan-title').textContent = firstRow[1]?.v || 'eSIMプラン';
+        document.getElementById('description').textContent = firstRow[2]?.v || 'プラン内容を選択してください';
+
+        // メリット
+        const merits = document.getElementById('merits');
+        [3, 4, 5].forEach(i => {
+          const v = firstRow[i]?.v;
+          if (v) {
+            const li = document.createElement('li');
+            li.textContent = v;
+            merits.appendChild(li);
+          }
+        });
+
+        // 概要
+        const summaries = document.getElementById('summaries');
+        [6, 7, 8].forEach(i => {
+          const v = firstRow[i]?.v;
+          if (v) {
+            const li = document.createElement('li');
+            li.textContent = v;
+            summaries.appendChild(li);
+          }
+        });
+
+        // 仕様
+        const specs = document.getElementById('specs');
+        [9, 10, 11].forEach(i => {
+          const v = firstRow[i]?.v;
+          if (v) {
+            const li = document.createElement('li');
+            li.textContent = v;
+            specs.appendChild(li);
+          }
+        });
+
+        // 日数セレクト
         const daysSelect = document.getElementById('days');
         rows.forEach(row => {
-          const day = row.c[11]?.v;
-          const price = row.c[13]?.v;
+          const day = row.c[12]?.v;
+          const price = row.c[14]?.v;
           if (day && price) {
             const option = document.createElement('option');
             option.value = day;
@@ -125,10 +183,10 @@
 
         daysSelect.addEventListener('change', updateTotal);
         document.getElementById('quantity').addEventListener('input', updateTotal);
-
         updateTotal();
 
-        const matchURL = rows[0].c[14]?.v;
+        // ボタンリンク
+        const matchURL = firstRow[15]?.v;
         if (matchURL) {
           document.getElementById('linkDisplay').innerHTML = `
             <a href="${matchURL}" target="_blank">
@@ -139,7 +197,7 @@
       })
       .catch(error => {
         console.error('読み込みエラー:', error);
-        document.getElementById('description').textContent = '読み込みに失敗しました';
+        document.getElementById('description').textContent = 'データ取得に失敗しました';
       });
   </script>
 </body>
