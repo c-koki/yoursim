@@ -10,14 +10,14 @@
       font-family: 'Zen Kaku Gothic New', sans-serif;
       background: #f5f5f5;
       margin: 0;
-      padding: 24px;
+      padding: 0;
     }
     .container {
       max-width: 480px;
       background: white;
       border-radius: 12px;
       padding: 24px;
-      margin: auto;
+      margin: 0 auto;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       box-sizing: border-box;
     }
@@ -44,10 +44,28 @@
       margin-top: 0;
       margin-bottom: 16px;
     }
+    .section-divider {
+      border-top: 2px solid #45c164;
+      margin-top: 32px;
+      margin-bottom: 16px;
+    }
+    .options-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .option-group {
+      flex: 1;
+    }
     label {
       font-weight: bold;
-      margin-top: 20px;
       display: block;
+      margin-bottom: 4px;
+    }
+    .subtext {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
     }
     select, input[type="number"] {
       padding: 10px;
@@ -70,21 +88,14 @@
       background: #45c164;
       color: white;
       border: none;
-      padding: 14px 28px;
+      padding: 16px;
       border-radius: 30px;
       font-size: 16px;
       cursor: pointer;
+      width: 100%;
     }
     .btn:hover {
       background: #3ab158;
-    }
-    @media screen and (max-width: 480px) {
-      .container {
-        padding: 16px;
-      }
-      .btn {
-        width: 100%;
-      }
     }
   </style>
 </head>
@@ -105,11 +116,20 @@
     <h2>■仕様</h2>
     <ul id="specs"></ul>
 
-    <label for="days">利用日数</label>
-    <select id="days"></select>
+    <div class="section-divider"></div>
 
-    <label for="quantity">eSIMの数量</label>
-    <input type="number" id="quantity" value="1" min="1" />
+    <div class="options-row">
+      <div class="option-group">
+        <label for="days">利用日数</label>
+        <div class="subtext">利用日数が長いほどお得になります。</div>
+        <select id="days"></select>
+      </div>
+      <div class="option-group">
+        <label for="quantity">eSIMの数量</label>
+        <div class="subtext">何名様分ご入用ですか？</div>
+        <input type="number" id="quantity" value="1" min="1" />
+      </div>
+    </div>
 
     <div class="price" id="total-price">合計 ¥000</div>
 
@@ -134,11 +154,9 @@
         const rows = json.table.rows;
         const firstRow = rows[0].c;
 
-        // タイトル・説明
         document.getElementById('plan-title').textContent = firstRow[1]?.v || 'eSIMプラン';
         document.getElementById('description').textContent = firstRow[2]?.v || '';
 
-        // メリット
         [3,4,5].forEach(i => {
           const val = firstRow[i]?.v;
           if (val) {
@@ -148,7 +166,6 @@
           }
         });
 
-        // 概要
         [6,7,8].forEach(i => {
           const val = firstRow[i]?.v;
           if (val) {
@@ -158,7 +175,6 @@
           }
         });
 
-        // 仕様
         [9,10,11].forEach(i => {
           const val = firstRow[i]?.v;
           if (val) {
@@ -168,7 +184,6 @@
           }
         });
 
-        // 日数と価格の選択肢
         const daysSelect = document.getElementById('days');
         rows.forEach(row => {
           const day = row.c[12]?.v;
@@ -182,7 +197,6 @@
           }
         });
 
-        // 合計金額の更新
         function updateTotal() {
           const selected = daysSelect.options[daysSelect.selectedIndex];
           const price = Number(selected?.getAttribute('data-price')) || 0;
@@ -196,7 +210,6 @@
         document.getElementById('quantity').addEventListener('input', updateTotal);
         updateTotal();
 
-        // 購入リンク
         const matchURL = firstRow[15]?.v;
         if (matchURL) {
           document.getElementById('linkDisplay').innerHTML = `
