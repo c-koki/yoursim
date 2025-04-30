@@ -8,197 +8,154 @@
   <style>
     body {
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      margin: 0;
-      padding: 20px;
       background: #f5f5f5;
-      color: #333;
-    }
-    .container {
-      max-width: 420px;
-      margin: 0 auto;
-      background: #fff;
-      border-radius: 8px;
+      margin: 0;
       padding: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
+
+    .container {
+      max-width: 480px;
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+
     h1 {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
-    h2 {
-      font-size: 18px;
-      margin-top: 24px;
-    }
-    ul {
-      padding-left: 20px;
-      margin: 8px 0;
-    }
-    li {
+      font-size: 20px;
+      font-weight: bold;
       margin-bottom: 4px;
     }
-    label, select, input {
-      display: block;
-      width: 100%;
-      margin-top: 16px;
-      font-size: 16px;
+
+    .price-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      margin-bottom: 12px;
     }
-    select, input {
+
+    h2 {
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 20px;
+      display: block;
+    }
+
+    .select-wrapper, .quantity-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    select, input[type="number"] {
       padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 16px;
     }
+
     .price {
       font-weight: bold;
-      font-size: 18px;
-      margin-top: 20px;
       text-align: center;
+      font-size: 20px;
+      margin-top: 24px;
     }
+
     .button-wrapper {
       text-align: center;
-      margin-top: 16px;
+      margin-top: 20px;
     }
+
     .btn {
-      background: #007bff;
+      background: #45c164;
       color: white;
       border: none;
-      padding: 12px 20px;
-      border-radius: 5px;
+      padding: 14px 28px;
+      border-radius: 30px;
+      font-size: 16px;
       cursor: pointer;
     }
+
     .btn:hover {
-      background: #0056b3;
+      background: #3ab158;
+    }
+
+    @media screen and (max-width: 480px) {
+      .container {
+        padding: 16px;
+      }
+
+      .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 id="plan-title">eSIMプラン</h1>
-    <div id="description">プラン内容を選択してください</div>
+    <div class="price-top">
+      <h1>韓国 eSIM</h1>
+      <div>¥000</div>
+    </div>
+    <p>ここにテキストが入ります。ここにテキストが入ります。</p>
 
-    <h2>メリット</h2>
-    <ul id="merits"></ul>
+    <h2>■メリット</h2>
+    <ul>
+      <li>・ここにテキストが入ります。</li>
+      <li>・ここにテキストが入ります。</li>
+      <li>・ここにテキストが入ります。</li>
+    </ul>
 
-    <h2>概要</h2>
-    <ul id="summaries"></ul>
+    <h2>■概要</h2>
+    <ul>
+      <li>・ここにテキストが入ります。</li>
+      <li>・ここにテキストが入ります。</li>
+      <li>・ここにテキストが入ります。</li>
+    </ul>
 
-    <h2>仕様</h2>
-    <ul id="specs"></ul>
+    <h2>■仕様</h2>
+    <ul>
+      <li>・ここにテキストが入ります。</li>
+      <li>・ここにテキストが入ります。</li>
+      <li>・ここにテキストが入ります。</li>
+    </ul>
 
-    <label for="days">利用日数を選択：</label>
-    <select id="days"></select>
+    <div class="select-wrapper">
+      <label for="days">利用日数</label>
+      <select id="days">
+        <option value="1">1</option>
+        <option value="3">3</option>
+        <option value="7">7</option>
+      </select>
+    </div>
 
-    <label for="quantity">eSIMの数量：</label>
-    <input type="number" id="quantity" value="1" min="1" />
+    <div class="quantity-wrapper">
+      <label for="quantity">eSIMの数量</label>
+      <input type="number" id="quantity" value="1" min="1" />
+    </div>
 
-    <div class="price" id="total-price">合計金額：-</div>
+    <div class="price">合計 ¥000</div>
 
-    <div class="button-wrapper" id="linkDisplay"></div>
+    <div class="button-wrapper">
+      <button class="btn">このプランを購入する</button>
+    </div>
   </div>
-
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const plan = urlParams.get('plan');
-
-    if (!plan) {
-      document.getElementById('description').textContent = 'URLに ?plan=Japan のようにパラメータを付けてください';
-      throw new Error('planパラメータが見つかりません');
-    }
-
-    const sheetId = '1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk'; // あなたのスプレッドシートID
-    const sheetURL = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
-
-    fetch(sheetURL)
-      .then(res => res.text())
-      .then(text => {
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows;
-
-        if (!rows.length) {
-          document.getElementById('description').textContent = '該当するデータが見つかりません';
-          return;
-        }
-
-        const firstRow = rows[0].c;
-
-        // タイトルと説明
-        document.getElementById('plan-title').textContent = firstRow[1]?.v || 'eSIMプラン';
-        document.getElementById('description').textContent = firstRow[2]?.v || 'プラン内容を選択してください';
-
-        // メリット
-        const merits = document.getElementById('merits');
-        [3, 4, 5].forEach(i => {
-          const v = firstRow[i]?.v;
-          if (v) {
-            const li = document.createElement('li');
-            li.textContent = v;
-            merits.appendChild(li);
-          }
-        });
-
-        // 概要
-        const summaries = document.getElementById('summaries');
-        [6, 7, 8].forEach(i => {
-          const v = firstRow[i]?.v;
-          if (v) {
-            const li = document.createElement('li');
-            li.textContent = v;
-            summaries.appendChild(li);
-          }
-        });
-
-        // 仕様
-        const specs = document.getElementById('specs');
-        [9, 10, 11].forEach(i => {
-          const v = firstRow[i]?.v;
-          if (v) {
-            const li = document.createElement('li');
-            li.textContent = v;
-            specs.appendChild(li);
-          }
-        });
-
-        // 日数セレクト
-        const daysSelect = document.getElementById('days');
-        rows.forEach(row => {
-          const day = row.c[12]?.v;
-          const price = row.c[14]?.v;
-          if (day && price) {
-            const option = document.createElement('option');
-            option.value = day;
-            option.textContent = day;
-            option.setAttribute('data-price', price);
-            daysSelect.appendChild(option);
-          }
-        });
-
-        function updateTotal() {
-          const selected = daysSelect.options[daysSelect.selectedIndex];
-          const price = Number(selected?.getAttribute('data-price'));
-          const quantity = Number(document.getElementById('quantity').value);
-          const total = price * quantity;
-          document.getElementById('total-price').textContent = isNaN(total)
-            ? '合計金額：-'
-            : `合計金額：¥${total.toLocaleString()}`;
-        }
-
-        daysSelect.addEventListener('change', updateTotal);
-        document.getElementById('quantity').addEventListener('input', updateTotal);
-        updateTotal();
-
-        // ボタンリンク
-        const matchURL = firstRow[15]?.v;
-        if (matchURL) {
-          document.getElementById('linkDisplay').innerHTML = `
-            <a href="${matchURL}" target="_blank">
-              <button class="btn">このプランを購入</button>
-            </a>
-          `;
-        }
-      })
-      .catch(error => {
-        console.error('読み込みエラー:', error);
-        document.getElementById('description').textContent = 'データ取得に失敗しました';
-      });
-  </script>
 </body>
 </html>
