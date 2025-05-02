@@ -157,11 +157,13 @@
   </div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const plan = urlParams.get('plan');
+    let plan = new URLSearchParams(window.location.search).get('plan');
     if (!plan) {
-      document.getElementById('description').textContent = 'URLに ?plan=Korea のようにパラメータを追加してください';
-      throw new Error('planパラメータがありません');
+      plan = window.location.pathname.split('/').pop();
+    }
+    if (!plan) {
+      document.getElementById('description').textContent = 'プラン名が指定されていません';
+      throw new Error('planが見つかりません');
     }
 
     const sheetId = '1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk';
