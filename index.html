@@ -12,13 +12,6 @@
       margin: 0;
       padding: 0 32px;
     }
-    .outer-box {
-      background: #45c164;
-      border-radius: 16px;
-      padding: 8px;
-      margin: 0 auto;
-      max-width: 680px;
-    }
     .container {
       max-width: 640px;
       background: #f5f5f5;
@@ -38,23 +31,10 @@
       align-items: center;
       font-weight: bold;
       margin-bottom: 24px;
-      position: relative;
     }
     #plan-price {
       font-size: 24px;
       font-weight: bold;
-      position: relative;
-      padding-left: 40px;
-    }
-    #plan-price::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 50%;
-      width: 30px;
-      height: 1px;
-      background: #ccc;
-      transform: translateY(-50%);
     }
     h2 {
       font-size: 16px;
@@ -95,31 +75,18 @@
       white-space: nowrap;
     }
     select, input[type="number"] {
-      padding: 10px 6px;
+      padding: 10px;
       border: 1px solid #ccc;
       border-radius: 8px;
       width: 100%;
       font-size: 16px;
       box-sizing: border-box;
-      text-align: center;
     }
     .price {
       font-weight: bold;
+      text-align: center;
       font-size: 22px;
       margin-top: 24px;
-      position: relative;
-      text-align: left;
-      padding-left: 40px;
-    }
-    .price::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 50%;
-      width: 30px;
-      height: 1px;
-      background: #ccc;
-      transform: translateY(-50%);
     }
     .button-wrapper {
       text-align: center;
@@ -142,42 +109,40 @@
   </style>
 </head>
 <body>
-  <div class="outer-box">
-    <div class="container">
-      <div class="price-top">
-        <h1 id="plan-title">eSIMプラン</h1>
-        <div id="plan-price">¥000</div>
-      </div>
-      <p id="description">ここにテキストが入ります。</p>
-
-      <h2>■メリット</h2>
-      <ul id="merits"></ul>
-
-      <h2>■概要</h2>
-      <ul id="summaries"></ul>
-
-      <h2>■仕様</h2>
-      <ul id="specs"></ul>
-
-      <div class="section-divider"></div>
-
-      <div class="options-row">
-        <div class="option-group">
-          <label for="days">利用日数</label>
-          <div class="subtext">利用日数が長いほどお得になります。</div>
-          <select id="days"></select>
-        </div>
-        <div class="option-group">
-          <label for="quantity">eSIMの数量</label>
-          <div class="subtext">何名様分ご入用ですか？</div>
-          <input type="number" id="quantity" value="1" min="1" />
-        </div>
-      </div>
-
-      <div class="price" id="total-price">合計 ¥000</div>
-
-      <div class="button-wrapper" id="linkDisplay"></div>
+  <div class="container">
+    <div class="price-top">
+      <h1 id="plan-title">eSIMプラン</h1>
+      <div id="plan-price">¥000</div>
     </div>
+    <p id="description">ここにテキストが入ります。</p>
+
+    <h2>■メリット</h2>
+    <ul id="merits"></ul>
+
+    <h2>■概要</h2>
+    <ul id="summaries"></ul>
+
+    <h2>■仕様</h2>
+    <ul id="specs"></ul>
+
+    <div class="section-divider"></div>
+
+    <div class="options-row">
+      <div class="option-group">
+        <label for="days">利用日数</label>
+        <div class="subtext">利用日数が長いほどお得になります。</div>
+        <select id="days"></select>
+      </div>
+      <div class="option-group">
+        <label for="quantity">eSIMの数量</label>
+        <div class="subtext">何名様分ご入用ですか？</div>
+        <input type="number" id="quantity" value="1" min="1" />
+      </div>
+    </div>
+
+    <div class="price" id="total-price">合計 ¥000</div>
+
+    <div class="button-wrapper" id="linkDisplay"></div>
   </div>
 </body>
 </html>
