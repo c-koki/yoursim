@@ -34,12 +34,16 @@
     }
     #plan.price {
       font-weight: bold;
+      text-align: left;
       font-size: 28px;
       margin-top: 24px;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      gap: 8px;
+    }
+    #plan-price {
+      font-size: 28px;
+      font-weight: bold;
+      position: relative;
     }
     .price::before {
       content: "";
@@ -51,7 +55,7 @@
     #plan-price::before {
       content: "";
       position: absolute;
-      left: -150px;
+      left: -100px;
       top: 50%;
       width: 150px;
       height: 2px;
@@ -128,6 +132,14 @@
     }
     .btn:hover {
       background: #3ab158;
+    }
+  #total-price::before {
+      content: "";
+      display: inline-block;
+      width: 100px;
+      height: 1px;
+      background: #ccc;
+      margin-right: 8px;
     }
   </style>
 </head>
