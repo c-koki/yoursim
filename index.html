@@ -12,6 +12,13 @@
       margin: 0;
       padding: 0 32px;
     }
+    .outer-box {
+      background: #45c164;
+      border-radius: 16px;
+      padding: 8px;
+      margin: 0 auto;
+      max-width: 680px;
+    }
     .container {
       max-width: 640px;
       background: #f5f5f5;
@@ -31,10 +38,23 @@
       align-items: center;
       font-weight: bold;
       margin-bottom: 24px;
+      position: relative;
     }
     #plan-price {
       font-size: 24px;
       font-weight: bold;
+      position: relative;
+      padding-left: 40px;
+    }
+    #plan-price::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 30px;
+      height: 1px;
+      background: #ccc;
+      transform: translateY(-50%);
     }
     h2 {
       font-size: 16px;
@@ -61,6 +81,7 @@
     }
     .option-group {
       flex: 1;
+      text-align: center;
     }
     label {
       font-weight: bold;
@@ -74,29 +95,30 @@
       white-space: nowrap;
     }
     select, input[type="number"] {
-      padding: 10px;
+      padding: 10px 6px;
       border: 1px solid #ccc;
       border-radius: 8px;
       width: 100%;
       font-size: 16px;
       box-sizing: border-box;
+      text-align: center;
     }
     .price {
       font-weight: bold;
-      text-align: center;
       font-size: 22px;
       margin-top: 24px;
       position: relative;
+      text-align: left;
+      padding-left: 40px;
     }
     .price::before {
       content: "";
-      display: block;
-      height: 1px;
-      background: #ccc;
-      width: 40%;
       position: absolute;
       left: 0;
       top: 50%;
+      width: 30px;
+      height: 1px;
+      background: #ccc;
       transform: translateY(-50%);
     }
     .button-wrapper {
@@ -120,120 +142,42 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="price-top">
-      <h1 id="plan-title">eSIMプラン</h1>
-      <div id="plan-price">¥000</div>
-    </div>
-    <p id="description">ここにテキストが入ります。</p>
-
-    <h2>■メリット</h2>
-    <ul id="merits"></ul>
-
-    <h2>■概要</h2>
-    <ul id="summaries"></ul>
-
-    <h2>■仕様</h2>
-    <ul id="specs"></ul>
-
-    <div class="section-divider"></div>
-
-    <div class="options-row">
-      <div class="option-group">
-        <label for="days">利用日数</label>
-        <div class="subtext">利用日数が長いほどお得になります。</div>
-        <select id="days"></select>
+  <div class="outer-box">
+    <div class="container">
+      <div class="price-top">
+        <h1 id="plan-title">eSIMプラン</h1>
+        <div id="plan-price">¥000</div>
       </div>
-      <div class="option-group">
-        <label for="quantity">eSIMの数量</label>
-        <div class="subtext">何名様分ご入用ですか？</div>
-        <input type="number" id="quantity" value="1" min="1" />
+      <p id="description">ここにテキストが入ります。</p>
+
+      <h2>■メリット</h2>
+      <ul id="merits"></ul>
+
+      <h2>■概要</h2>
+      <ul id="summaries"></ul>
+
+      <h2>■仕様</h2>
+      <ul id="specs"></ul>
+
+      <div class="section-divider"></div>
+
+      <div class="options-row">
+        <div class="option-group">
+          <label for="days">利用日数</label>
+          <div class="subtext">利用日数が長いほどお得になります。</div>
+          <select id="days"></select>
+        </div>
+        <div class="option-group">
+          <label for="quantity">eSIMの数量</label>
+          <div class="subtext">何名様分ご入用ですか？</div>
+          <input type="number" id="quantity" value="1" min="1" />
+        </div>
       </div>
+
+      <div class="price" id="total-price">合計 ¥000</div>
+
+      <div class="button-wrapper" id="linkDisplay"></div>
     </div>
-
-    <div class="price" id="total-price">合計 ¥000</div>
-
-    <div class="button-wrapper" id="linkDisplay"></div>
   </div>
-
-  <script>
-    let plan = new URLSearchParams(window.location.search).get('plan');
-    if (!plan) {
-      plan = window.location.pathname.split('/').pop();
-    }
-    if (!plan) {
-      document.getElementById('description').textContent = 'プラン名が指定されていません';
-      throw new Error('planが見つかりません');
-    }
-
-    const sheetId = '1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk';
-    const sheetURL = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
-
-    fetch(sheetURL)
-      .then(res => res.text())
-      .then(text => {
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows;
-        const firstRow = rows[0].c;
-
-        document.getElementById('plan-title').textContent = firstRow[1]?.v || 'eSIMプラン';
-        document.getElementById('description').textContent = firstRow[2]?.v || '';
-
-        const addListItems = (elementId, indexes) => {
-          const ul = document.getElementById(elementId);
-          indexes.forEach(i => {
-            const val = firstRow[i]?.v;
-            if (val) {
-              const li = document.createElement('li');
-              li.textContent = val;
-              ul.appendChild(li);
-            }
-          });
-        };
-
-        addListItems('merits', [3,4,5]);
-        addListItems('summaries', [6,7,8]);
-        addListItems('specs', [9,10,11]);
-
-        const daysSelect = document.getElementById('days');
-        let lastPrice = 0;
-        rows.forEach(row => {
-          const day = row.c[12]?.v;
-          const price = row.c[14]?.v;
-          if (day && price) {
-            const option = document.createElement('option');
-            option.value = price;
-            option.textContent = `${day}日`;
-            daysSelect.appendChild(option);
-            lastPrice = price;
-          }
-        });
-
-        function updateTotal() {
-          const selectedPrice = Number(daysSelect.value) || 0;
-          const quantity = Number(document.getElementById('quantity').value) || 1;
-          const total = selectedPrice * quantity;
-          document.getElementById('total-price').textContent = `合計 ¥${total.toLocaleString()}`;
-          document.getElementById('plan-price').textContent = `¥${(selectedPrice * quantity).toLocaleString()}`;
-        }
-
-        daysSelect.addEventListener('change', updateTotal);
-        document.getElementById('quantity').addEventListener('input', updateTotal);
-        updateTotal();
-
-        const matchURL = firstRow[15]?.v;
-        if (matchURL) {
-          document.getElementById('linkDisplay').innerHTML = `
-            <a href="${matchURL}" target="_blank">
-              <button class="btn">このプランを購入する</button>
-            </a>
-          `;
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        document.getElementById('description').textContent = 'データの読み込みに失敗しました';
-      });
-  </script>
 </body>
 </html>
