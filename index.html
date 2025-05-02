@@ -144,5 +144,79 @@
 
     <div class="button-wrapper" id="linkDisplay"></div>
   </div>
+<script>
+  let plan = new URLSearchParams(window.location.search).get('plan');
+  if (!plan) {
+    plan = window.location.pathname.split('/').pop();
+  }
+  const sheetId = '1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk';
+  const sheetURL = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
+
+  fetch(sheetURL)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = json.table.rows;
+      const firstRow = rows[0].c;
+
+      document.getElementById('plan-title').textContent = firstRow[1]?.v || 'eSIMプラン';
+      document.getElementById('description').textContent = firstRow[2]?.v || '';
+
+      const addListItems = (elementId, indexes) => {
+        const ul = document.getElementById(elementId);
+        indexes.forEach(i => {
+          const val = firstRow[i]?.v;
+          if (val) {
+            const li = document.createElement('li');
+            li.textContent = val;
+            ul.appendChild(li);
+          }
+        });
+      };
+
+      addListItems('merits', [3,4,5]);
+      addListItems('summaries', [6,7,8]);
+      addListItems('specs', [9,10,11]);
+
+      const daysSelect = document.getElementById('days');
+      let lastPrice = 0;
+      rows.forEach(row => {
+        const day = row.c[12]?.v;
+        const price = row.c[14]?.v;
+        if (day && price) {
+          const option = document.createElement('option');
+          option.value = price;
+          option.textContent = `${day}日`;
+          daysSelect.appendChild(option);
+          lastPrice = price;
+        }
+      });
+
+      function updateTotal() {
+        const selectedPrice = Number(daysSelect.value) || 0;
+        const quantity = Number(document.getElementById('quantity').value) || 1;
+        const total = selectedPrice * quantity;
+        document.getElementById('total-price').textContent = `合計 ¥${total.toLocaleString()}`;
+        document.getElementById('plan-price').textContent = `¥${(selectedPrice * quantity).toLocaleString()}`;
+      }
+
+      daysSelect.addEventListener('change', updateTotal);
+      document.getElementById('quantity').addEventListener('input', updateTotal);
+      updateTotal();
+
+      const matchURL = firstRow[15]?.v;
+      if (matchURL) {
+        document.getElementById('linkDisplay').innerHTML = `
+          <a href="${matchURL}" target="_blank">
+            <button class="btn">このプランを購入する</button>
+          </a>
+        `;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('description').textContent = 'データの読み込みに失敗しました';
+    });
+</script>
 </body>
 </html>
