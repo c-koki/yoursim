@@ -32,26 +32,12 @@
       font-weight: bold;
       margin-bottom: 24px;
     }
-    #plan.price {
-      font-weight: bold;
-      text-align: left;
-      font-size: 28px;
-      margin-top: 24px;
-      display: flex;
-      align-items: center;
-    }
     #plan-price {
       font-size: 28px;
       font-weight: bold;
       position: relative;
     }
-    .price::before {
-      content: "";
-      width: 150px;
-      height: 1px;
-      background: #ccc;
-      margin-right: 8px;
-    }
+    .price::before,
     #plan-price::before {
       content: "";
       position: absolute;
@@ -100,7 +86,7 @@
       margin-bottom: 4px;
       white-space: nowrap;
     }
-    select, input[type="number"] {
+    select, input[type="number"], input[type="date"] {
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -175,15 +161,32 @@
     <p id="description">ここにテキストが入ります。</p>
 
     <h2>■メリット</h2>
-    <ul id="merits"></ul>
+    <ul>
+      <li>海外旅行中もすぐに通信が使える</li>
+      <li>SIMカード不要でスマホひとつで完結</li>
+      <li>到着前に設定すればすぐ使える</li>
+    </ul>
 
     <h2>■概要</h2>
-    <ul id="summaries"></ul>
+    <ul>
+      <li>データ通信専用のプリペイドeSIM</li>
+      <li>テザリング可能（端末による）</li>
+      <li>アクティベートからカウント開始</li>
+    </ul>
 
     <h2>■仕様</h2>
-    <ul id="specs"></ul>
+    <ul>
+      <li>対応端末：iPhone XS以降 / 一部Android</li>
+      <li>有効期間：選択日数</li>
+      <li>通信速度：高速データ制限後は低速</li>
+    </ul>
 
     <div class="section-divider"></div>
+
+    <div class="option-group" style="margin-bottom: 24px;">
+      <label for="start-date">開始日</label>
+      <input type="date" id="start-date" />
+    </div>
 
     <div class="options-row">
       <div class="option-group">
@@ -202,79 +205,66 @@
 
     <div class="button-wrapper" id="linkDisplay"></div>
   </div>
-<script>
-  let plan = new URLSearchParams(window.location.search).get('plan');
-  if (!plan) {
-    plan = window.location.pathname.split('/').pop();
-  }
-  const sheetId = '1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk';
-  const sheetURL = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
 
-  fetch(sheetURL)
-    .then(res => res.text())
-    .then(text => {
-      const json = JSON.parse(text.substr(47).slice(0, -2));
-      const rows = json.table.rows;
-      const firstRow = rows[0].c;
+  <script>
+    let plan = new URLSearchParams(window.location.search).get('plan');
+    if (!plan) {
+      plan = window.location.pathname.split('/').pop();
+    }
 
-      document.getElementById('plan-title').textContent = firstRow[1]?.v || 'eSIMプラン';
-      document.getElementById('description').textContent = firstRow[2]?.v || '';
+    const sheetId = '1zlcduLGSM2ctjKhb07ODH03RKPAFzG87NQZl6P8phbk';
+    const sheetURL = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${plan}`;
 
-      const addListItems = (elementId, indexes) => {
-        const ul = document.getElementById(elementId);
-        indexes.forEach(i => {
-          const val = firstRow[i]?.v;
-          if (val) {
-            const li = document.createElement('li');
-            li.textContent = val;
-            ul.appendChild(li);
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const firstRow = rows[0].c;
+
+        document.getElementById('plan-title').textContent = firstRow[0]?.v || 'eSIMプラン';
+        document.getElementById('description').textContent = firstRow[2]?.v || '';
+
+        const daysSelect = document.getElementById('days');
+        let lastPrice = 0;
+
+        rows.forEach(row => {
+          const day = row.c[3]?.v;
+          const price = row.c[5]?.v;
+          if (day && price) {
+            const option = document.createElement('option');
+            option.value = price;
+            option.textContent = `${day}日`;
+            daysSelect.appendChild(option);
+            lastPrice = price;
           }
         });
-      };
 
-      addListItems('merits', [3,4,5]);
-      addListItems('summaries', [6,7,8]);
-      addListItems('specs', [9,10,11]);
-
-      const daysSelect = document.getElementById('days');
-      let lastPrice = 0;
-      rows.forEach(row => {
-        const day = row.c[12]?.v;
-        const price = row.c[14]?.v;
-        if (day && price) {
-          const option = document.createElement('option');
-          option.value = price;
-          option.textContent = `${day}日`;
-          daysSelect.appendChild(option);
-          lastPrice = price;
+        function updateTotal() {
+          const selectedPrice = Number(daysSelect.value) || 0;
+          const quantity = Number(document.getElementById('quantity').value) || 1;
+          const total = selectedPrice * quantity;
+          document.getElementById('total-price').textContent = `合計 ¥${total.toLocaleString()}`;
+          document.getElementById('plan-price').textContent = `¥${(selectedPrice * quantity).toLocaleString()}`;
         }
+
+        daysSelect.addEventListener('change', updateTotal);
+        document.getElementById('quantity').addEventListener('input', updateTotal);
+        updateTotal();
+
+        const matchURL = firstRow[6]?.v;
+        if (matchURL) {
+          document.getElementById('linkDisplay').innerHTML = `
+            <a href="${matchURL}" target="_blank">
+              <button class="btn">このプランを購入する</button>
+            </a>
+          `;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('description').textContent = 'データの読み込みに失敗しました';
       });
-
-      function updateTotal() {
-        const selectedPrice = Number(daysSelect.value) || 0;
-        const quantity = Number(document.getElementById('quantity').value) || 1;
-        const total = selectedPrice * quantity;
-        document.getElementById('total-price').textContent = `合計 ¥${total.toLocaleString()}`;
-        document.getElementById('plan-price').textContent = `¥${(selectedPrice * quantity).toLocaleString()}`;
-      }
-
-      daysSelect.addEventListener('change', updateTotal);
-      document.getElementById('quantity').addEventListener('input', updateTotal);
-      updateTotal();
-
-      const matchURL = firstRow[15]?.v;
-      if (matchURL) {
-        document.getElementById('linkDisplay').innerHTML = `
-          <a href="${matchURL}" target="_blank">
-            <button class="btn">このプランを購入する</button>
-          </a>
-        `;
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      document.getElementById('description').textContent = 'データの読み込みに失敗しました';
-    });
-</script>
+  </script>
 </body>
 </html>
